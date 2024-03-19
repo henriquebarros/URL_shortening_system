@@ -13,4 +13,8 @@ GET http://localhost:3333/api/links
 
 ###
 
-GET http://localhost:3333/rocketseat3
+GET http://localhost:3333/rocketseat2
+
+
+###
+GET http://localhost:3333/api/metrics

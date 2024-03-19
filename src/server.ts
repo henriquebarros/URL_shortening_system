@@ -3,6 +3,7 @@ import {z} from 'zod'
 import { sql } from "./lib/postgres";
 import postgres from "postgres";
 import { request } from "http";
+import { redis } from "./lib/redis";
 const app = fastify()
 
 
@@ -23,6 +24,10 @@ app.get('/:code', async(request,reply)=>{
     if(!link){
         return reply.status(400).send({message: 'Link not found.'})
     }
+    await redis.zIncrBy('metrics',1,String(link.id) )
+
+
+
     // 301 = permanent
     // 302 = temporário
     return reply.redirect(301,link.original_url)
@@ -68,6 +73,21 @@ app.post('/api/links', async (request,reply)=>{
 
         return reply.status(500).send({message: 'Internal error.'})
     }
+})
+
+app.get('/api/metrics', async ()=>{
+    const result = await redis.zRangeByScoreWithScores('metrics',0,50) //retorna os primieros 50 links mais acessados, -1 retorna todos 
+
+    const metrics = result
+                        .sort((a,b)=>b.score-a.score)
+                        .map(item=>{
+                            return {
+                              shortLinkId: Number(item.value),
+                              clicks: item.score
+                            }
+                        })
+
+    return metrics
 })
 
 app.listen({
