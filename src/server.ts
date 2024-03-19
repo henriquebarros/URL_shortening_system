@@ -2,7 +2,18 @@ import fastify from "fastify";
 import {z} from 'zod'
 import { sql } from "./lib/postgres";
 import postgres from "postgres";
+import { request } from "http";
 const app = fastify()
+
+app.get('/links', async ( )=>{
+    const result = await sql/*sql*/`
+        SELECT *
+        FROM short_links
+        ORDER BY created_at DESC
+    `
+
+    return result
+})
 
 
 app.post('/links', async (request,reply)=>{
